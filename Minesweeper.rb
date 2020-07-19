@@ -64,7 +64,7 @@ class Minesweeper
     end
 
     def ask_again
-      puts "もう一度プレイしますか？(yes/no)"
+      puts "もう一度プレイしますか？(▶yes no)"
       yes_or_no = gets
       if yes_or_no == "yes\n" || yes_or_no == "\n"
         start

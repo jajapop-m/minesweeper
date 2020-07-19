@@ -1,7 +1,6 @@
 class Cell
   attr_accessor :id, :status, :revealed
-  def initialize(id)
-    @id = id
+  def initialize
     @status = 0
     @revealed = false
   end

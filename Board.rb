@@ -53,11 +53,9 @@ class Board
     def create_board(n,bomb_count)
       @n = n
       @lists = Array.new(n){Array.new(n)}
-      id = 0
       n.times do |i|
         n.times do |j|
-          lists[i][j] = Cell.new(id)
-          id += 1
+          lists[i][j] = Cell.new
         end
       end
       bombs_set(bomb_count)
