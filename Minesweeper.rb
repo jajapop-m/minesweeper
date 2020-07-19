@@ -43,8 +43,7 @@ class Minesweeper
         puts "もう一度入力して下さい。"
         return game_config
       end
-      @board = Board.new(n)
-      board.create_board(bomb)
+      @board = Board.new(n,bomb)
     end
 
     def try_game
