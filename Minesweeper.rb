@@ -39,12 +39,6 @@ class Board
     check_game_status
   end
 
-  def check_game_status
-    return game_over  if game_over?
-    return game_clear if game_clear?
-    puts_list
-  end
-
   def puts_list
     cur_stat_with_line_numbers = current_statuses
     cur_stat_with_line_numbers.each do |r|
@@ -53,16 +47,8 @@ class Board
     end
   end
 
-  def bomb_set(bomb_count)
-    @bomb_count = bomb_count
-    @bomb_map = Array.new(n*n,false)
-    for c in 0...bomb_count
-      bomb_map[c] = true
-    end
-    bomb_map.shuffle!
-    bomb_map.each_with_index do |bool, idx|
-      lists.flatten[idx].status = :bomb if bool
-    end
+  def create_board(bomb_count)
+    bombs_set(bomb_count)
     numbers_set
   end
 
@@ -84,6 +70,24 @@ class Board
       reveal_loop(i+1,j+1) if within_range?(i+1,j+1) && (not lists[i+1][j+1].revealed?)
       reveal_loop(i,j-1)   if within_range?(i,j-1)   && (not lists[i][j-1].revealed?)
       reveal_loop(i,j+1)   if within_range?(i,j+1)   && (not lists[i][j+1].revealed?)
+    end
+
+    def check_game_status
+      return game_over  if game_over?
+      return game_clear if game_clear?
+      puts_list
+    end
+
+    def bombs_set(bomb_count)
+      @bomb_count = bomb_count
+      @bomb_map = Array.new(n*n,false)
+      for c in 0...bomb_count
+        bomb_map[c] = true
+      end
+      bomb_map.shuffle!
+      bomb_map.each_with_index do |bool, idx|
+        lists.flatten[idx].status = :bomb if bool
+      end
     end
 
     def numbers_set
@@ -172,58 +176,79 @@ end
 
 class Minesweeper
   attr_accessor :board, :n
-  def start
-    game_config
-    board.puts_list
-    try_game
-  end
-
-  def game_config
-    puts "7×7マス,爆弾3個 でよろしいですか？(yes/no)"
-    yes_or_no = gets.to_s.chomp
-    if yes_or_no == "yes"
-      @n, bomb = 7, 3
-    elsif yes_or_no == "no"
-      @n, bomb = custom_info
-    else
-      puts "もう一度入力して下さい。"
-      return game_config
-    end
-    @board = Board.new(n)
-    board.bomb_set(bomb)
-  end
-
-  def try_game
-    while board.continuing?
-      print "縦 横:"
-      i,j,*flag = gets.split
-      i,j = i.to_i,j.to_i
-      if validate(i,j)
-        puts "もう一度入力して下さい"
-        return try_game
-      end
-      i -= 1
-      j -= 1
-      next board.flag(i,j) unless flag.empty?
-      board.reveal(i,j)
-    end
-    ask_again
-  end
-
-  def ask_again
-    puts "もう一度プレイしますか？(yes/no)"
-    yes_or_no = gets.to_s.chomp
-    if yes_or_no == 'yes'
-      start
-    elsif yes_or_no == 'no'
-      puts "終了します"
-      exit
-    else
-      return ask_again
-    end
+  def initialize
+    start
   end
 
   private
+
+    def start
+      puts "Minesweeper"
+      puts "▶start help"
+      input = gets
+      help if input == "\e[C\n" || input == "help\n"
+      game_config
+      board.puts_list
+      try_game
+    end
+
+    def help
+      puts(<<~EOS)
+        start ▶help
+        縦 横 (f):
+        1 1 と入力すると(1,1)を開けます。
+        フラグを立てるには f オプションをつけて下さい。
+        例) 1 1 f
+        ▶OK
+      EOS
+      input = gets
+    end
+
+    def game_config
+      puts "7×7マス,爆弾3個 でよろしいですか？(▶yes　no)"
+      yes_or_no = gets
+      if yes_or_no == "yes\n" || yes_or_no == "\n"
+        @n, bomb = 7, 3
+      elsif yes_or_no == "no\n" || yes_or_no == "\e[C\n"
+        @n, bomb = custom_info
+      else
+        puts "もう一度入力して下さい。"
+        return game_config
+      end
+      @board = Board.new(n)
+      board.create_board(bomb)
+    end
+
+    def try_game
+      while board.continuing?
+        print "縦 横 (f): "
+        i,j,*flag = gets.split
+        i,j = i.to_i,j.to_i
+        if validate(i,j)
+          puts "もう一度入力して下さい"
+          return try_game
+        end
+        i -= 1
+        j -= 1
+        next board.flag(i,j) unless flag.empty?
+        board.reveal(i,j)
+      end
+      ask_again
+    end
+
+    def ask_again
+      puts "もう一度プレイしますか？(yes/no)"
+      yes_or_no = gets.to_s.chomp
+      if yes_or_no == 'yes'
+        start
+      elsif yes_or_no == 'no'
+        puts "終了します"
+        exit
+      else
+        return ask_again
+      end
+    end
+
     def validate(i,j)
       (not i) || (not j) || (i < 0 || i > n) || (j < 0 || j > n)
     end
@@ -241,4 +266,4 @@ class Minesweeper
     end
 end
 
-Minesweeper.new.start
+Minesweeper.new
