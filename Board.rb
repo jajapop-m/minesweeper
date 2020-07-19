@@ -5,8 +5,7 @@ class Board
     create_board(n,bomb)
   end
 
-  def reveal(i,j,*flag)
-    return flag(i,j) unless flag.empty?
+  def reveal(i,j)
     reveal_loop(i,j)
     check_game_status
   end

@@ -49,7 +49,7 @@ class Minesweeper
     def try_game
       while board.continuing?
         print "縦 横 (f): "
-        i,j,*flag = gets.split
+        i,j,flag = gets.split
         i,j = i.to_i,j.to_i
         if validate(i,j)
           puts "もう一度入力して下さい"
@@ -57,7 +57,8 @@ class Minesweeper
         end
         i -= 1
         j -= 1
-        next board.flag(i,j) unless flag.empty?
+        next puts "オプションが間違っています" if !flag.nil? && flag != "f"
+        next board.flag(i,j) if flag == "f"
         board.reveal(i,j)
       end
       ask_again
