@@ -130,8 +130,12 @@ class Board
 
     def game_clear?
       count = 0
-      lists.flatten.each {|l| count += 1 if l.revealed?}
-      count == n*n - bomb_count
+      correct_flag = 0
+      lists.flatten.each do |l|
+        count += 1 if l.revealed?
+        correct_flag += 1 if l.revealed == :flag && l.status == :bomb
+      end
+      count == n*n - bomb_count || correct_flag == bomb_count
     end
 
     def within_range?(i,j)
