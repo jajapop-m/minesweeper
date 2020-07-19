@@ -1,16 +1,8 @@
 class Board
   attr_accessor :n, :lists, :bomb_map, :bomb_count
 
-  def initialize(n)
-    @n = n
-    @lists = Array.new(n){Array.new(n)}
-    id = 0
-    n.times do |i|
-      n.times do |j|
-        lists[i][j] = Cell.new(id)
-        id += 1
-      end
-    end
+  def initialize(n,bomb)
+    create_board(n,bomb)
   end
 
   def reveal(i,j,*flag)
@@ -30,11 +22,6 @@ class Board
       r.each {|a| print a.to_s.rjust([n.to_s.length, 2].max)}
       puts "\r"
     end
-  end
-
-  def create_board(bomb_count)
-    bombs_set(bomb_count)
-    numbers_set
   end
 
   def continuing?
@@ -61,6 +48,21 @@ class Board
       return game_over  if game_over?
       return game_clear if game_clear?
       puts_list
+    end
+
+    def create_board(n,bomb_count)
+      @n = n
+      @lists = Array.new(n){Array.new(n)}
+      id = 0
+      n.times do |i|
+        n.times do |j|
+          lists[i][j] = Cell.new(id)
+          id += 1
+        end
+      end
+      bombs_set(bomb_count)
+      numbers_set
+      safe_set
     end
 
     def bombs_set(bomb_count)
@@ -90,10 +92,9 @@ class Board
           end
         end
       end
-      none_set
     end
 
-    def none_set
+    def safe_set
       lists.flatten.each do |l|
         l.status = :safe if l.status == 0
       end
@@ -119,12 +120,8 @@ class Board
 
     def game_clear?
       count = 0
-      correct_flag = 0
-      lists.flatten.each do |l|
-        count += 1 if l.revealed?
-        correct_flag += 1 if l.revealed == :flag && l.status == :bomb
-      end
-      count == n*n - bomb_count || correct_flag == bomb_count
+      lists.flatten.each {|l| count += 1 if l.revealed?}
+      count == n*n - bomb_count
     end
 
     def within_range?(i,j)
